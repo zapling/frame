@@ -1,2 +1,3 @@
 # gx
-Experimental lib to write composable web components in Go
+
+Experimental cli tool to help write front-end applications with Go
