@@ -1,9 +1,13 @@
 package cmd
 
 import (
+	"bytes"
 	"fmt"
+	"io"
 	"os"
+	"os/exec"
 	"runtime/debug"
+	"strings"
 
 	"github.com/spf13/cobra"
 )
@@ -27,6 +31,26 @@ var versionCmd = &cobra.Command{
 			gxVersion = "(devel)"
 		}
 
+		goVersion, _ := getInstalledGoVersion()
+		if goVersion == "" {
+			goVersion = "?"
+		}
+
 		fmt.Printf("gx version: %s\n", gxVersion)
+		fmt.Printf("go version: %s\n", goVersion)
 	},
+}
+
+func getInstalledGoVersion() (string, error) {
+	goVersionCmdStdout := bytes.NewBuffer(nil)
+	goVersionCmd := exec.Command("go", "version")
+	goVersionCmd.Stdout = goVersionCmdStdout
+	if err := goVersionCmd.Run(); err != nil {
+		return "", fmt.Errorf("failed to run 'go version': %w", err)
+	}
+
+	goVersionBytes, _ := io.ReadAll(goVersionCmdStdout)
+	goVersion := strings.Split(string(goVersionBytes), " ")[2][2:]
+
+	return goVersion, nil
 }
