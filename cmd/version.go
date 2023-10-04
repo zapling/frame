@@ -14,7 +14,7 @@ func init() {
 
 var versionCmd = &cobra.Command{
 	Use:   "version",
-	Short: "Show gx and dependecy versions",
+	Short: "Show current version of gx",
 	Run: func(cmd *cobra.Command, args []string) {
 		info, ok := debug.ReadBuildInfo()
 		if !ok {
@@ -24,7 +24,7 @@ var versionCmd = &cobra.Command{
 
 		gxVersion := info.Main.Version
 		if gxVersion == "" {
-			gxVersion = "devel"
+			gxVersion = "(devel)"
 		}
 
 		fmt.Printf("gx version: %s\n", gxVersion)
