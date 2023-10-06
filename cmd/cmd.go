@@ -6,6 +6,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/zapling/frame/cmd/initialize"
+	"github.com/zapling/frame/cmd/serve"
 	"github.com/zapling/frame/cmd/version"
 )
 
@@ -21,5 +22,6 @@ var root = &cobra.Command{
 func GetCommand() *cobra.Command {
 	root.AddCommand(version.Command)
 	root.AddCommand(initialize.Command)
+	root.AddCommand(serve.Command)
 	return root
 }

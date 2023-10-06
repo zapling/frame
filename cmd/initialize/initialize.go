@@ -3,11 +3,11 @@ package initialize
 import (
 	"embed"
 	"fmt"
-	"html/template"
 	"io"
 	"io/fs"
 	"os"
 	"os/exec"
+	"text/template"
 
 	"github.com/spf13/cobra"
 )
