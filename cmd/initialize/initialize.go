@@ -3,22 +3,31 @@ package initialize
 import (
 	"embed"
 	"fmt"
+	"html/template"
 	"io"
 	"io/fs"
 	"os"
 	"os/exec"
-	"text/template"
 
 	"github.com/spf13/cobra"
 )
 
-var directoryPerm fs.FileMode = 0755
-var filePerm fs.FileMode = 0644
-
 //go:embed skeleton
-var files embed.FS
+var skeletonFiles embed.FS
 
-func ExecuteCommand(cmd *cobra.Command, args []string) {
+var (
+	dirPerm  fs.FileMode = 0755
+	filePerm fs.FileMode = 0644
+)
+
+var Command = &cobra.Command{
+	Use:   "init [project]",
+	Short: "Initialize a new frame project",
+	Args:  cobra.ExactArgs(1),
+	Run:   executeCommand,
+}
+
+func executeCommand(cmd *cobra.Command, args []string) {
 	projectName := args[0]
 
 	if _, err := os.Stat(projectName); !os.IsNotExist(err) {
@@ -28,7 +37,7 @@ func ExecuteCommand(cmd *cobra.Command, args []string) {
 
 	fmt.Println("Creating project dir")
 
-	if err := os.Mkdir(projectName, directoryPerm); err != nil {
+	if err := os.Mkdir(projectName, dirPerm); err != nil {
 		fmt.Printf("Failed to create project directory: %v", err)
 		os.Exit(1)
 	}
@@ -40,7 +49,7 @@ func ExecuteCommand(cmd *cobra.Command, args []string) {
 
 	fmt.Println("Creating project skeleton")
 
-	if err := createFilesFromSkeleton(files, "skeleton", projectName); err != nil {
+	if err := createFilesFromSkeleton(skeletonFiles, "skeleton", projectName); err != nil {
 		fmt.Printf("Failed to create file skeleton: %v", err)
 		os.Exit(1)
 	}
@@ -61,7 +70,7 @@ func createFilesFromSkeleton(files fs.FS, rootDir string, moduleName string) err
 		destinationPath := path[len(rootDir)+1:]
 
 		if d.IsDir() {
-			if err := os.Mkdir(destinationPath, directoryPerm); err != nil {
+			if err := os.Mkdir(destinationPath, dirPerm); err != nil {
 				return fmt.Errorf("failed to create dir '%s': %w", path, err)
 			}
 			return nil

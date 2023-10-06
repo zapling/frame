@@ -1,4 +1,4 @@
-package cmd
+package version
 
 import (
 	"bytes"
@@ -12,17 +12,13 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func init() {
-	RootCmd.AddCommand(versionCmd)
-}
-
-var versionCmd = &cobra.Command{
+var Command = &cobra.Command{
 	Use:   "version",
-	Short: "Show current version of gx",
+	Short: "Outputs frame CLI version",
 	Run: func(cmd *cobra.Command, args []string) {
 		info, ok := debug.ReadBuildInfo()
 		if !ok {
-			fmt.Println("gx built without module, this should not be possible")
+			fmt.Println("frame built without module, this should not be possible")
 			os.Exit(1)
 		}
 
@@ -36,7 +32,7 @@ var versionCmd = &cobra.Command{
 			goVersion = "?"
 		}
 
-		fmt.Printf("gx version: %s\n", gxVersion)
+		fmt.Printf("frame version: %s\n", gxVersion)
 		fmt.Printf("go version: %s\n", goVersion)
 	},
 }
