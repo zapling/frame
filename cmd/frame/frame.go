@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/zapling/gx/cmd"
+	"github.com/zapling/frame/cmd"
 )
 
 func main() {

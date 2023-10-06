@@ -22,9 +22,9 @@ var Command = &cobra.Command{
 			os.Exit(1)
 		}
 
-		gxVersion := info.Main.Version
-		if gxVersion == "" {
-			gxVersion = "(devel)"
+		frameVersion := info.Main.Version
+		if frameVersion == "" {
+			frameVersion = "(devel)"
 		}
 
 		goVersion, _ := getInstalledGoVersion()
@@ -32,7 +32,7 @@ var Command = &cobra.Command{
 			goVersion = "?"
 		}
 
-		fmt.Printf("frame version: %s\n", gxVersion)
+		fmt.Printf("frame version: %s\n", frameVersion)
 		fmt.Printf("go version: %s\n", goVersion)
 	},
 }

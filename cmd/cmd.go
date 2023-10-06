@@ -5,8 +5,8 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
-	"github.com/zapling/gx/cmd/initialize"
-	"github.com/zapling/gx/cmd/version"
+	"github.com/zapling/frame/cmd/initialize"
+	"github.com/zapling/frame/cmd/version"
 )
 
 var root = &cobra.Command{

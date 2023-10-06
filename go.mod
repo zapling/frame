@@ -1,4 +1,4 @@
-module github.com/zapling/gx
+module github.com/zapling/frame
 
 go 1.21.0
 
