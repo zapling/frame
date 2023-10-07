@@ -7,12 +7,12 @@ import (
 	"{{ .ModuleName }}/internal/pages/index"
 )
 
-func startRouter() error {
+func getServer() *http.Server {
 	r := chi.NewRouter()
 
 	r.Handle("/assets/*", http.StripPrefix("/assets/", getAssetsHandler("assets")))
 
 	r.Get("/", index.GetPage)
 
-	return http.ListenAndServe(":3000", r)
+	return &http.Server{Addr: ":3000", Handler: r}
 }

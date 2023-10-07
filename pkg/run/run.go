@@ -10,33 +10,6 @@ import (
 	"time"
 )
 
-type RunFunc func(ctx context.Context) error
-
-// App runs the provided runFunc until it returns or until a SIGINT or SIGTERM
-// signal is received.
-func App(parentCtx context.Context, runFunc RunFunc) error {
-	osSignals := make(chan os.Signal, 1)
-	defer close(osSignals)
-	signal.Notify(osSignals, syscall.SIGINT, syscall.SIGTERM)
-
-	ctx, cancelFunc := context.WithCancel(parentCtx)
-	defer cancelFunc()
-
-	errChan := make(chan error, 1)
-	defer close(errChan)
-	go func(runCtx context.Context) {
-		errChan <- runFunc(runCtx)
-	}(ctx)
-
-	select {
-	case <-osSignals:
-		cancelFunc() // attempt to stop runFunc
-		return <-errChan
-	case err := <-errChan:
-		return err
-	}
-}
-
 func Webserver(server *http.Server) error {
 	errChan := make(chan error, 1)
 	defer close(errChan)
