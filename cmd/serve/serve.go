@@ -1,8 +1,10 @@
 package serve
 
 import (
+	"bytes"
 	"crypto/rand"
 	"fmt"
+	"io"
 	"os"
 	"os/exec"
 	"os/signal"
@@ -10,6 +12,7 @@ import (
 
 	"github.com/rjeczalik/notify"
 	"github.com/spf13/cobra"
+	"github.com/ttacon/chalk"
 )
 
 var Command = &cobra.Command{
@@ -36,13 +39,11 @@ func executeCommand2(cmd *cobra.Command, args []string) {
 
 	binaryPath, err := buildApp()
 	if err != nil {
-		fmt.Printf("Error building app: %v\n", err)
 		os.Exit(1)
 	}
 
 	serveCmd, err = runApp(binaryPath)
 	if err != nil {
-		fmt.Printf("Error running app: %v\n", err)
 		os.Exit(1)
 	}
 
@@ -51,7 +52,6 @@ func executeCommand2(cmd *cobra.Command, args []string) {
 		case <-watchFileChanged:
 			binaryPath, err := buildApp()
 			if err != nil {
-				fmt.Printf("Error building app: %v\n", err)
 				break
 			}
 
@@ -69,7 +69,6 @@ func executeCommand2(cmd *cobra.Command, args []string) {
 
 			serveCmd, err = runApp(binaryPath)
 			if err != nil {
-				fmt.Printf("Error starting app: %v\n", err)
 				break
 			}
 
@@ -83,22 +82,46 @@ func executeCommand2(cmd *cobra.Command, args []string) {
 
 func runApp(binaryPath string) (*exec.Cmd, error) {
 
+	buf := bytes.NewBuffer(nil)
 	command := exec.Command(binaryPath)
 	command.Stdout = os.Stdout
+	command.Stderr = buf
+
+	fmt.Print("Starting app... ")
 
 	if err := command.Start(); err != nil {
+		fmt.Print(chalk.Red, "✘\n", chalk.Reset)
+
+		bytes, _ := io.ReadAll(buf)
+		fmt.Print(chalk.Red, string(bytes), err, "\n", chalk.Reset)
+
 		return nil, fmt.Errorf("failed to start app: %w", err)
 	}
+
+	fmt.Print(chalk.Green, "✔\n", chalk.Reset)
 
 	return command, nil
 }
 
 func buildApp() (string, error) {
 	path := "/tmp/frame-binary-" + getSemiRandomString()
+
+	buf := bytes.NewBuffer(nil)
 	buildCmd := exec.Command("go", "build", "-o", path, "./cmd/")
+	buildCmd.Stderr = buf
+
+	fmt.Print("Building app... ")
+
 	if err := buildCmd.Run(); err != nil {
-		return "", err
+		fmt.Print(chalk.Red, "✘\n", chalk.Reset)
+
+		bytes, _ := io.ReadAll(buf)
+		fmt.Print(chalk.Red, string(bytes), err, "\n", chalk.Reset)
+
+		return "", fmt.Errorf("failed to build app: %w", err)
 	}
+
+	fmt.Print(chalk.Green, "✔\n", chalk.Reset)
 
 	return path, nil
 }
