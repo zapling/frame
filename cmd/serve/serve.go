@@ -14,6 +14,7 @@ import (
 	"github.com/rjeczalik/notify"
 	"github.com/spf13/cobra"
 	"github.com/ttacon/chalk"
+	"golang.org/x/net/websocket"
 )
 
 var Command = &cobra.Command{
@@ -27,6 +28,12 @@ func executeCommand2(cmd *cobra.Command, args []string) {
 		serveCmd *exec.Cmd
 		err      error
 	)
+
+	websocketServer := &wsServer{
+		conns: make(map[*websocket.Conn]bool),
+	}
+
+	go websocketServer.start()
 
 	osSignals := make(chan os.Signal, 1)
 	signal.Notify(osSignals, syscall.SIGINT, syscall.SIGTERM)
@@ -47,6 +54,8 @@ func executeCommand2(cmd *cobra.Command, args []string) {
 	if err != nil {
 		os.Exit(1)
 	}
+
+	websocketServer.notifyClients()
 
 	eventProcessedAt := time.Now()
 
@@ -83,6 +92,8 @@ func executeCommand2(cmd *cobra.Command, args []string) {
 				eventProcessedAt = time.Now()
 				break
 			}
+
+			websocketServer.notifyClients()
 
 			eventProcessedAt = time.Now()
 
