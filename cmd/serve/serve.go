@@ -9,6 +9,7 @@ import (
 	"os/exec"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"github.com/rjeczalik/notify"
 	"github.com/spf13/cobra"
@@ -47,11 +48,21 @@ func executeCommand2(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
+	eventProcessedAt := time.Now()
+
 	for {
 		select {
 		case <-watchFileChanged:
+
+			// we might get multiple events regarding the same thing in bursts,
+			// ignore event if we just rebuilt
+			if !time.Now().Add(-1 * time.Second).After(eventProcessedAt) {
+				break
+			}
+
 			binaryPath, err := buildApp()
 			if err != nil {
+				eventProcessedAt = time.Now()
 				break
 			}
 
@@ -69,8 +80,11 @@ func executeCommand2(cmd *cobra.Command, args []string) {
 
 			serveCmd, err = runApp(binaryPath)
 			if err != nil {
+				eventProcessedAt = time.Now()
 				break
 			}
+
+			eventProcessedAt = time.Now()
 
 		case <-osSignals:
 			fmt.Println("Goodbye!")
