@@ -12,7 +12,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-//go:embed skeleton
+//go:embed _skeleton
 var skeletonFiles embed.FS
 
 var (
@@ -49,7 +49,7 @@ func executeCommand(cmd *cobra.Command, args []string) {
 
 	fmt.Println("Creating project skeleton")
 
-	if err := createFilesFromSkeleton(skeletonFiles, "skeleton", projectName); err != nil {
+	if err := createFilesFromSkeleton(skeletonFiles, "_skeleton", projectName); err != nil {
 		fmt.Printf("Failed to create file skeleton: %v", err)
 		os.Exit(1)
 	}
