@@ -1,4 +1,4 @@
-# frame
+# frame 🖼️
 
 Experimental cli tool to help write front-end applications with Go
 
