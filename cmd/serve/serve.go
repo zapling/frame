@@ -1,10 +1,7 @@
 package serve
 
 import (
-	"bytes"
-	"crypto/rand"
 	"fmt"
-	"io"
 	"os"
 	"os/exec"
 	"os/signal"
@@ -13,7 +10,6 @@ import (
 
 	"github.com/rjeczalik/notify"
 	"github.com/spf13/cobra"
-	"github.com/ttacon/chalk"
 	"github.com/zapling/frame/pkg/cfg"
 	"golang.org/x/net/websocket"
 )
@@ -53,8 +49,8 @@ func executeCommand2(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
-	serveCmd, err = runApp(binaryPath)
-	if err != nil {
+	serveCmd = getAppCmd(binaryPath)
+	if err := runApp(serveCmd); err != nil {
 		os.Exit(1)
 	}
 
@@ -90,8 +86,8 @@ func executeCommand2(cmd *cobra.Command, args []string) {
 				}
 			}
 
-			serveCmd, err = runApp(binaryPath)
-			if err != nil {
+			serveCmd = getAppCmd(binaryPath)
+			if err := runApp(serveCmd); err != nil {
 				eventProcessedAt = time.Now()
 				break
 			}
@@ -106,60 +102,4 @@ func executeCommand2(cmd *cobra.Command, args []string) {
 			os.Exit(0)
 		}
 	}
-}
-
-func runApp(binaryPath string) (*exec.Cmd, error) {
-
-	buf := bytes.NewBuffer(nil)
-	command := exec.Command(binaryPath)
-	command.Stdout = os.Stdout
-	command.Stderr = buf
-
-	fmt.Print("Starting app... ")
-
-	if err := command.Start(); err != nil {
-		fmt.Print(chalk.Red, "✘\n", chalk.Reset)
-
-		bytes, _ := io.ReadAll(buf)
-		fmt.Print(chalk.Red, string(bytes), err, "\n", chalk.Reset)
-
-		return nil, fmt.Errorf("failed to start app: %w", err)
-	}
-
-	fmt.Print(chalk.Green, "✔\n", chalk.Reset)
-
-	return command, nil
-}
-
-func buildApp() (string, error) {
-	path := "/tmp/frame-binary-" + getSemiRandomString()
-
-	buf := bytes.NewBuffer(nil)
-	buildCmd := exec.Command("go", "build", "-o", path, "./cmd/")
-	buildCmd.Stderr = buf
-
-	fmt.Print("Building app... ")
-
-	if err := buildCmd.Run(); err != nil {
-		fmt.Print(chalk.Red, "✘\n", chalk.Reset)
-
-		bytes, _ := io.ReadAll(buf)
-		fmt.Print(chalk.Red, string(bytes), err, "\n", chalk.Reset)
-
-		return "", fmt.Errorf("failed to build app: %w", err)
-	}
-
-	fmt.Print(chalk.Green, "✔\n", chalk.Reset)
-
-	return path, nil
-}
-
-func getSemiRandomString() string {
-	n := 5
-	b := make([]byte, n)
-	if _, err := rand.Read(b); err != nil {
-		panic(err)
-	}
-	s := fmt.Sprintf("%X", b)
-	return s
 }
