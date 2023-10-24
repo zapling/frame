@@ -55,7 +55,7 @@ func executeCommand(cmd *cobra.Command, args []string) {
 			os.Exit(1)
 		}
 
-		projectName = filepath.Dir(wd)
+		projectName = filepath.Base(wd)
 	}
 
 	fmt.Println("Creating project skeleton")
