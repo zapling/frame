@@ -2,6 +2,7 @@ package version
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -10,7 +11,10 @@ import (
 	"strings"
 
 	"github.com/spf13/cobra"
+	"github.com/ttacon/chalk"
 )
+
+var errCommandNotFound = errors.New("command not found in path")
 
 var Command = &cobra.Command{
 	Use:   "version",
@@ -22,31 +26,72 @@ var Command = &cobra.Command{
 			os.Exit(1)
 		}
 
+		goVersion := getInstalledGoVersion()
+		if goVersion == "" {
+			goVersion = "?"
+		}
+
 		frameVersion := info.Main.Version
 		if frameVersion == "" {
 			frameVersion = "(devel)"
 		}
 
-		goVersion, _ := getInstalledGoVersion()
-		if goVersion == "" {
-			goVersion = "?"
+		templVersion := getInstalledTemplVersion()
+		if templVersion == "" {
+			templVersion = "?"
 		}
 
-		fmt.Printf("frame version: %s\n", frameVersion)
 		fmt.Printf("go version: %s\n", goVersion)
+		fmt.Printf("frame version: %s\n", frameVersion)
+		fmt.Printf("templ version: %s\n", templVersion)
 	},
 }
 
-func getInstalledGoVersion() (string, error) {
-	goVersionCmdStdout := bytes.NewBuffer(nil)
-	goVersionCmd := exec.Command("go", "version")
-	goVersionCmd.Stdout = goVersionCmdStdout
-	if err := goVersionCmd.Run(); err != nil {
-		return "", fmt.Errorf("failed to run 'go version': %w", err)
+func getInstalledGoVersion() string {
+	output, err := getVersion([]string{"go", "version"})
+	if errors.Is(err, errCommandNotFound) {
+		return fmt.Sprint(chalk.Red, "'go' not found in path", chalk.Reset)
 	}
 
-	goVersionBytes, _ := io.ReadAll(goVersionCmdStdout)
-	goVersion := strings.Split(string(goVersionBytes), " ")[2][2:]
+	goVersion := strings.Split(output, " ")[2][2:]
+	return goVersion
+}
 
-	return goVersion, nil
+func getInstalledTemplVersion() string {
+	output, err := getVersion([]string{"templ", "version"})
+	if errors.Is(err, errCommandNotFound) {
+		return fmt.Sprint(chalk.Red, "templ not found in path", chalk.Reset)
+	}
+	if err != nil {
+		fmt.Printf("Failed to get templ version: %v", err)
+		os.Exit(1)
+	}
+
+	return strings.TrimSpace(output)
+}
+
+func getVersion(command []string) (string, error) {
+	if len(command) == 0 {
+		return "", fmt.Errorf("empty command not allowed")
+	}
+
+	_, err := exec.LookPath(command[0])
+	if err != nil {
+		return "", errCommandNotFound
+	}
+
+	stdout := bytes.NewBuffer(nil)
+	cmd := exec.Command(command[0], command[1:]...)
+	cmd.Stdout = stdout
+
+	if err := cmd.Run(); err != nil {
+		return "", fmt.Errorf("failed to run command: %w", err)
+	}
+
+	bytes, err := io.ReadAll(stdout)
+	if err != nil {
+		return "", fmt.Errorf("failed to read bytes from stdout: %w", err)
+	}
+
+	return string(bytes), nil
 }
