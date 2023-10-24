@@ -14,6 +14,7 @@ import (
 	"github.com/rjeczalik/notify"
 	"github.com/spf13/cobra"
 	"github.com/ttacon/chalk"
+	"github.com/zapling/frame/pkg/cfg"
 	"golang.org/x/net/websocket"
 )
 
@@ -28,6 +29,8 @@ func executeCommand2(cmd *cobra.Command, args []string) {
 		serveCmd *exec.Cmd
 		err      error
 	)
+
+	os.Setenv(cfg.FrameDevMode, "true")
 
 	devServer := &developmentServer{
 		wsConns: make(map[*websocket.Conn]bool),
