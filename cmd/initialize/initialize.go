@@ -7,6 +7,7 @@ import (
 	"io/fs"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"text/template"
 
 	"github.com/spf13/cobra"
@@ -30,21 +31,31 @@ var Command = &cobra.Command{
 func executeCommand(cmd *cobra.Command, args []string) {
 	projectName := args[0]
 
-	if _, err := os.Stat(projectName); !os.IsNotExist(err) {
-		fmt.Println("Directory already exists!")
-		os.Exit(1)
-	}
+	if projectName != "." {
+		if _, err := os.Stat(projectName); !os.IsNotExist(err) {
+			fmt.Println("Directory already exists!")
+			os.Exit(1)
+		}
 
-	fmt.Println("Creating project dir")
+		fmt.Println("Creating project dir")
 
-	if err := os.Mkdir(projectName, dirPerm); err != nil {
-		fmt.Printf("Failed to create project directory: %v", err)
-		os.Exit(1)
-	}
+		if err := os.Mkdir(projectName, dirPerm); err != nil {
+			fmt.Printf("Failed to create project directory: %v", err)
+			os.Exit(1)
+		}
 
-	if err := os.Chdir(projectName); err != nil {
-		fmt.Printf("Failed to change working directory to %s", projectName)
-		os.Exit(1)
+		if err := os.Chdir(projectName); err != nil {
+			fmt.Printf("Failed to change working directory to %s", projectName)
+			os.Exit(1)
+		}
+	} else {
+		wd, err := os.Getwd()
+		if err != nil {
+			fmt.Printf("Failed to get current working directory: %v", err)
+			os.Exit(1)
+		}
+
+		projectName = filepath.Dir(wd)
 	}
 
 	fmt.Println("Creating project skeleton")
