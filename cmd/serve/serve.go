@@ -29,11 +29,11 @@ func executeCommand2(cmd *cobra.Command, args []string) {
 		err      error
 	)
 
-	websocketServer := &wsServer{
-		conns: make(map[*websocket.Conn]bool),
+	devServer := &developmentServer{
+		wsConns: make(map[*websocket.Conn]bool),
 	}
 
-	go websocketServer.start()
+	go devServer.start()
 
 	osSignals := make(chan os.Signal, 1)
 	signal.Notify(osSignals, syscall.SIGINT, syscall.SIGTERM)
@@ -55,7 +55,7 @@ func executeCommand2(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
-	websocketServer.notifyClients()
+	devServer.notifyClients()
 
 	eventProcessedAt := time.Now()
 
@@ -93,7 +93,7 @@ func executeCommand2(cmd *cobra.Command, args []string) {
 				break
 			}
 
-			websocketServer.notifyClients()
+			devServer.notifyClients()
 
 			eventProcessedAt = time.Now()
 
