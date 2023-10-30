@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
+	"github.com/zapling/frame/cmd/generate"
 	"github.com/zapling/frame/cmd/initialize"
 	"github.com/zapling/frame/cmd/serve"
 	"github.com/zapling/frame/cmd/version"
@@ -23,5 +24,14 @@ func GetCommand() *cobra.Command {
 	root.AddCommand(version.Command)
 	root.AddCommand(initialize.Command)
 	root.AddCommand(serve.Command)
+
+	root.AddCommand(generate.Command)
+	generate.Command.Flags().BoolVar(
+		&generate.ComponentHandler,
+		"with-handler",
+		false,
+		"Generate http handler",
+	)
+
 	return root
 }
