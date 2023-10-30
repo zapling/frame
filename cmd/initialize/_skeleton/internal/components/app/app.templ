@@ -1,0 +1,30 @@
+package app
+
+import (
+	"fmt"
+)
+
+templ Component(conf Config, body templ.Component) {
+	<!DOCTYPE HTML>
+	<html lang="en">
+		<head>
+			<title>Hello World</title>
+			<meta charset="UTF-8"/>
+			<meta name="viewport" content="width=device-width, initial-scale=1"/>
+			<link rel="icon" type="image/x-icon" href="/assets/favicon.ico"/>
+			if conf.IsRunningInDevMode {
+				@getPageRefreshScriptTag(conf.DevServerPort)
+			}
+		</head>
+		<body>
+			if body != nil {
+				@body
+			}
+		</body>
+	</html>
+}
+
+templ getPageRefreshScriptTag(portNumber int) {
+	<script src={ fmt.Sprintf("http://localhost:%d/refresh_page_ws_client.js", portNumber) }>
+    </script>
+}
